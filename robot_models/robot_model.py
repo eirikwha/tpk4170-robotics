@@ -8,7 +8,7 @@ import time
 from traitlets import observe
 
 
-def mesh_from_dae(dae, scale=1.0, name=''):
+def mesh_from_dae(dae, name='', scale=1.0):
     materials = materials_from_dae(dae)
     group = Group()
     for geometry in dae.geometries:
@@ -37,6 +37,27 @@ def materials_from_dae(dae):
     return materials
 
 
+def grid(num_cells=5, color='#cccccc', linewidth=1, cellsize=0.5):
+    grid = Group()
+    material = LineBasicMaterial(color=color, linewidth=linewidth)
+    for i in range(num_cells+1):
+        edge = cellsize * num_cells / 2
+        position = edge - (i * cellsize)
+        geometry_h = Geometry(vertices=[(-edge, position, 0),
+                                        (edge, position, 0)])
+        geometry_v = Geometry(vertices=[(position, -edge, 0),
+                                        (position, edge, 0)])
+        grid.add(Line(geometry=geometry_h, material=material))
+        grid.add(Line(geometry=geometry_v, material=material))
+    return grid
+
+
+def ball(color='red', radius=0.025):
+    ball = Mesh(geometry=SphereGeometry(radius=radius),
+                material=MeshLambertMaterial(color=color))
+    return ball
+
+
 class Robot(object):
     def __init__(self):
         self._chain = None
@@ -44,40 +65,52 @@ class Robot(object):
 
     def display(self):
         key_light = DirectionalLight(color='white', position=[
-                                     0, 0, 3], intensity=0.4)
+                                     3, 3, 3], intensity=0.66)
 
-        c = PerspectiveCamera(position=[3, 3, 2], up=[0, 0, 1])
+        near = 0.01
+        far = 1000
+        width = 768
+        height = 512
+
+        c = PerspectiveCamera(40, width/height, near, far)
+        c.position = [3, 3, 3]
+        c.up = [0, 0, 1]
+
         c.add(key_light)
 
-        pl = PointLight(color='0xffffff', intensity=1.0, position=[3, 3, 3])
+        pl = PointLight(color='0xffffff', intensity=0.1,
+                        position=[3, 3, 3])
 
         axes = AxesHelper(size=0.5)
 
-        scene = Scene(background=None)
+        # scene = Scene(background=None)
+        scene = Scene()
+        scene.background = "#111111"
+
         # scene = Scene()
         scene.add(axes)
         scene.add(AmbientLight())
         scene.add(pl)
+        scene.add(grid())
 
         scene.add(self._chain)
 
         renderer = Renderer(camera=c,
                             scene=scene,
-                            alpha=True,
-                            clearOpacity=0,
+                            antialias=True,
                             controls=[OrbitControls(controlling=c)],
-                            height=512, width=512)
+                            height=height, width=width)
         display(renderer)
 
     def _ee_debug_call_twice(self):
         self._ee.exec_three_obj_method('updateMatrixWorld')
-        return np.array(self._ee.matrixWorld).reshape(4,4).T
+        return np.array(self._ee.matrixWorld).reshape(4, 4).T
 
 
 class KR6R900sixx(Robot):
-    def __init__(self):
+    def __init__(self, q = np.array([0.0, -np.pi/2, np.pi/2, 0.0, np.pi/2, 0.0]), interact=False):
 
-        self._q = np.array([0.0, 0.0,0.0, 0.0, 0.0, 0.0])
+        self._q = q
         self._ee = None
 
         base_dae = Collada('kr6r900sixx/visual/base_link.dae')
@@ -88,68 +121,45 @@ class KR6R900sixx(Robot):
         link_5_dae = Collada('kr6r900sixx/visual/link_5.dae')
         link_6_dae = Collada('kr6r900sixx/visual/link_6.dae')
 
-        base_link = mesh_from_dae(base_dae, name='base_link')
-        base_link.scale = [0.001, 0.001, 0.001]
-        link_1 = mesh_from_dae(link_1_dae, name='link_1')
-        link_1.scale = [0.001, 0.001, 0.001]
-
-        link_2 = mesh_from_dae(link_2_dae, name='link_2')
-        link_2.scale = [0.001, 0.001, 0.001]
+        base_link = mesh_from_dae(base_dae, name='base_link', scale=0.001)
+        link_1 = mesh_from_dae(link_1_dae, name='link_1', scale=0.001)
+        link_2 = mesh_from_dae(link_2_dae, name='link_2', scale=0.001)
         link_2.rotateY(pi/2)
-
-        link_3 = mesh_from_dae(link_3_dae, name='link_3')
-        link_3.scale = [0.001, 0.001, 0.001]
+        link_3 = mesh_from_dae(link_3_dae, name='link_3', scale=0.001)
         link_3.position = [-0.025, 0.0, 0.0]
-
-        link_4 = mesh_from_dae(link_4_dae, name='link_4')
-        link_4.scale = [0.001, 0.001, 0.001]
-
-        link_5 = mesh_from_dae(link_5_dae, name='link_5')
-        link_5.scale = [0.001, 0.001, 0.001]
-
-        link_6 = mesh_from_dae(link_6_dae, name='link_6')
-        link_6.scale = [0.001, 0.001, 0.001]
+        link_4 = mesh_from_dae(link_4_dae, name='link_4', scale=0.001)
+        link_5 = mesh_from_dae(link_5_dae, name='link_5', scale=0.001)
+        link_6 = mesh_from_dae(link_6_dae, name='link_6', scale=0.001)
 
         self._chain = Object3D(name='base_frame', children=[base_link])
 
         j1 = Object3D(name='j1', position=[0.0, 0.0, 0.400])
         j1.add(link_1)
-        # j1.add(AxesHelper(size=0.5))
-
         j2 = Object3D(name='j2', position=[0.025, 0.0, 0.0])
         j2.add(link_2)
-        # j2.add(AxesHelper(size=0.5))
-
         j3 = Object3D(name='j3', position=[0.455, 0.0, 0.0])
         j3.add(link_3)
-        # j3.add(AxesHelper(size=0.5))
-
         j4 = Object3D(name='j4', position=[0.0, 0.0, 0.035])
         j4.add(link_4)
-        # j4.add(AxesHelper(size=0.5))
-
         j5 = Object3D(name='j5', position=[0.42, 0.0, 0.0])
         j5.add(link_5)
-        # j5.add(AxesHelper(size=0.5))
-
         j6 = Object3D(name='j6', position=[0.080, 0.0, 0.0])
         j6.add(link_6)
+
+        # j1.add(AxesHelper(size=0.5))
+        # j2.add(AxesHelper(size=0.5))
+        # j3.add(AxesHelper(size=0.5))
+        # j4.add(AxesHelper(size=0.5))
+        # j5.add(AxesHelper(size=0.5))
         # j6.add(AxesHelper(size=0.5))
 
         tool0 = Object3D(name='tool0', position=[0.0, 0.0, 0.0])
         tool0.rotateY(pi/2)
         tool0.add(AxesHelper(size=0.5))
 
+        tool0.add(ball())
+
         self._ee = tool0
-
-        self._matrixWorld_updated = False
-
-        def func(change):
-            print(change['new'])
-            print("func")
-            self._matrixWorld_updated = True
-
-        self._ee.observe(func, 'matrixWorld')
 
         self._chain.add(j1)
         j1.add(j2)
@@ -161,26 +171,34 @@ class KR6R900sixx(Robot):
 
         self._joints = [j1, j2, j3, j4, j5, j6]
 
-        self.set_q(self._q)
+        self.q = self._q
 
+        self.display()
 
+        if interact:
+            self.interact()
+
+    def _show_axes_helpers(self, show=False):
+        for j in self._joints:
+            j.add(AxesHelper(size=0.5))
 
     def interact(self):
         def f(q1, q2, q3, q4, q5, q6):
-            self._q = np.array([q1, q2, q3, q4, q5, q6])
+            
+            # self._joints[0].quaternion = quaternion_about_axis(
+            #     q1, (0, 0, -1, 0)).tolist()
+            # self._joints[1].quaternion = quaternion_about_axis(
+            #     q2, (0, 1, 0, 0)).tolist()
+            # self._joints[2].quaternion = quaternion_about_axis(
+            #     q3, (0, 1, 0, 0)).tolist()
+            # self._joints[3].quaternion = quaternion_about_axis(
+            #     q4, (-1, 0, 0, 0)).tolist()
+            # self._joints[4].quaternion = quaternion_about_axis(
+            #     q5, (0, 1, 0, 0)).tolist()
+            # self._joints[5].quaternion = quaternion_about_axis(
+            #     q6, (-1, 0, 0, 0)).tolist()
 
-            self._joints[0].quaternion = quaternion_about_axis(
-                q1, (0, 0, -1, 0)).tolist()
-            self._joints[1].quaternion = quaternion_about_axis(
-                q2, (0, 1, 0, 0)).tolist()
-            self._joints[2].quaternion = quaternion_about_axis(
-                q3, (0, 1, 0, 0)).tolist()
-            self._joints[3].quaternion = quaternion_about_axis(
-                q4, (-1, 0, 0, 0)).tolist()
-            self._joints[4].quaternion = quaternion_about_axis(
-                q5, (0, 1, 0, 0)).tolist()
-            self._joints[5].quaternion = quaternion_about_axis(
-                q6, (-1, 0, 0, 0)).tolist()
+            self.q = np.array([q1, q2, q3, q4, q5, q6])
 
         ipywidgets.interact(f,
                             q1=(np.deg2rad(-185), np.deg2rad(185)),
@@ -189,12 +207,16 @@ class KR6R900sixx(Robot):
                             q4=(np.deg2rad(-350), np.deg2rad(350)),
                             q5=(np.deg2rad(-130), np.deg2rad(130)),
                             q6=(np.deg2rad(-350), np.deg2rad(350)))
+        
+
+        
 
     @property
     def q(self):
         return self._q
 
-    def set_q(self, q):
+    @q.setter
+    def q(self, q):
         self._q = np.copy(q)
         self._joints[0].quaternion = quaternion_about_axis(
             q[0], (0, 0, -1, 0)).tolist()
@@ -339,7 +361,7 @@ class KR16(Robot):
 
 class UR5(Robot):
     def __init__(self):
-        self._q = np.array([0, 0,0,0,0,0])
+        self._q = np.array([0, 0, 0, 0, 0, 0])
         self._q_offset = np.array([0, np.pi/2, 0, np.pi/2, 0, 0])
 
         base_dae = Collada('ur5/visual/base.dae')
@@ -394,7 +416,6 @@ class UR5(Robot):
         wrist_3_link_tool0_fixed_joint = Object3D(position=[0.0, 0.0823, 0.0])
         wrist_3_link_tool0_fixed_joint.rotateX(-np.pi/2)
         wrist_3_link_tool0_fixed_joint.add(tool_0)
-
 
         self._chain.add(shoulder_pan_joint)
         shoulder_pan_joint.add(shoulder_lift_joint)
