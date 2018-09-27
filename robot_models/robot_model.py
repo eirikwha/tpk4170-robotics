@@ -213,23 +213,23 @@ class KR6R900sixx(Robot):
 
     @property
     def q(self):
-        return self._q
+        return self._q  #* np.array([-1.,1.,1.,-1.,1.,-1.])
 
     @q.setter
     def q(self, q):
         self._q = np.copy(q)
         self._joints[0].quaternion = quaternion_about_axis(
-            q[0], (0, 0, -1, 0)).tolist()
+            q[0], (0, 0, 1, 0)).tolist()
         self._joints[1].quaternion = quaternion_about_axis(
             q[1], (0, 1, 0, 0)).tolist()
         self._joints[2].quaternion = quaternion_about_axis(
             q[2], (0, 1, 0, 0)).tolist()
         self._joints[3].quaternion = quaternion_about_axis(
-            q[3], (-1, 0, 0, 0)).tolist()
+            q[3], (1, 0, 0, 0)).tolist()
         self._joints[4].quaternion = quaternion_about_axis(
             q[4], (0, 1, 0, 0)).tolist()
         self._joints[5].quaternion = quaternion_about_axis(
-            q[5], (-1, 0, 0, 0)).tolist()
+            q[5], (1, 0, 0, 0)).tolist()
 
 
 class KR16(Robot):
@@ -360,9 +360,10 @@ class KR16(Robot):
 
 
 class UR5(Robot):
-    def __init__(self):
-        self._q = np.array([0, 0, 0, 0, 0, 0])
-        self._q_offset = np.array([0, np.pi/2, 0, np.pi/2, 0, 0])
+    def __init__(self, q = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), interact=False):
+        self._q = q
+        # self._q_offset = np.array([0, -pi/2, 0, -np.pi/2., 0, 0])
+        # self._q_offset = np.array([0, 0, 0, 0, 0, 0]) 
 
         base_dae = Collada('ur5/visual/base.dae')
         forearm_dae = Collada('ur5/visual/forearm.dae')
@@ -381,7 +382,7 @@ class UR5(Robot):
         wrist3_link = mesh_from_dae(wrist3_dae)
 
         ee_link = Object3D()
-        ee_link.add(AxesHelper())
+        # ee_link.add(AxesHelper())
 
         tool_0 = Object3D()
         tool_0.add(AxesHelper())
@@ -392,17 +393,17 @@ class UR5(Robot):
         shoulder_pan_joint.add(shoulder_link)
 
         shoulder_lift_joint = Object3D(position=[0., 0.13585, 0.0])
-        # shoulder_lift_joint.rotateY(np.pi/2)
+        shoulder_lift_joint.rotateY(np.pi/2)
         shoulder_lift_joint.add(upper_arm_link)
 
         elbow_joint = Object3D(position=[0., -0.1197, 0.425])
         elbow_joint.add(forearm_link)
 
         wrist_1_joint = Object3D(position=[0., 0., 0.39225])
-        # wrist_1_joint.rotateY(np.pi/2)
+        wrist_1_joint.rotateY(np.pi/2)
         wrist_1_joint.add(wrist1_link)
 
-        wrist_2_joint = Object3D(position=[0., 0.1095+0.1197-0.13585, 0.])
+        wrist_2_joint = Object3D(position=[0., 0.10915+0.1197-0.13585, 0.])
         wrist_2_joint.add(wrist2_link)
 
         wrist_3_joint = Object3D(position=[0., 0., 0.09465])
@@ -417,6 +418,8 @@ class UR5(Robot):
         wrist_3_link_tool0_fixed_joint.rotateX(-np.pi/2)
         wrist_3_link_tool0_fixed_joint.add(tool_0)
 
+        self._ee = tool_0
+
         self._chain.add(shoulder_pan_joint)
         shoulder_pan_joint.add(shoulder_lift_joint)
         shoulder_lift_joint.add(elbow_joint)
@@ -424,7 +427,7 @@ class UR5(Robot):
         wrist_1_joint.add(wrist_2_joint)
         wrist_2_joint.add(wrist_3_joint)
         wrist_3_joint.add(ee_fixed_joint)
-        # wrist_3_joint.add(wrist_3_link_tool0_fixed_joint)
+        wrist_3_joint.add(wrist_3_link_tool0_fixed_joint)
 
         self._joints = [shoulder_pan_joint,
                         shoulder_lift_joint,
@@ -433,7 +436,12 @@ class UR5(Robot):
                         wrist_2_joint,
                         wrist_3_joint]
 
-        self.set_q(self._q)
+        self.q = self._q
+
+        self.display()
+
+        if interact:
+            self.interact()
 
     def interact(self):
         def f(q1, q2, q3, q4, q5, q6):
@@ -464,21 +472,22 @@ class UR5(Robot):
     def q(self):
         return self._q
 
-    def set_q(self, q):
+    @q.setter
+    def q(self, q):
         self._q = np.copy(q)
 
         self._joints[0].quaternion = quaternion_about_axis(
-            q[0], (0, 0, 1, 0)).tolist()
+            self._q[0], (0, 0, 1, 0)).tolist()
         self._joints[1].quaternion = quaternion_about_axis(
-            q[1] + np.pi/2, (0, 1, 0, 0)).tolist()
+            self._q[1], (0, 1, 0, 0)).tolist()
         self._joints[2].quaternion = quaternion_about_axis(
-            q[2], (0, 1, 0, 0)).tolist()
+            self._q[2], (0, 1, 0, 0)).tolist()
         self._joints[3].quaternion = quaternion_about_axis(
-            q[3], (0, 1, 0, 0)).tolist()
+            self._q[3], (0, 1, 0, 0)).tolist()
         self._joints[4].quaternion = quaternion_about_axis(
-            q[4] + np.pi/2, (0, 0, 1, 0)).tolist()
+            self._q[4], (0, 0, 1, 0)).tolist()
         self._joints[5].quaternion = quaternion_about_axis(
-            q[5], (0, 1, 0, 0)).tolist()
+            self._q[5], (0, 1, 0, 0)).tolist()
 
 
 class DenavitHartenberg(object):
