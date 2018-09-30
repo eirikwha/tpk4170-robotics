@@ -37,25 +37,6 @@ def materials_from_dae(dae):
     return materials
 
 
-def grid(num_cells=5, color='#cccccc', linewidth=1, cellsize=0.5):
-    grid = Group()
-    material = LineBasicMaterial(color=color, linewidth=linewidth)
-    for i in range(num_cells+1):
-        edge = cellsize * num_cells / 2
-        position = edge - (i * cellsize)
-        geometry_h = Geometry(vertices=[(-edge, position, 0),
-                                        (edge, position, 0)])
-        geometry_v = Geometry(vertices=[(position, -edge, 0),
-                                        (position, edge, 0)])
-        grid.add(Line(geometry=geometry_h, material=material))
-        grid.add(Line(geometry=geometry_v, material=material))
-    return grid
-
-
-def ball(color='red', radius=0.025):
-    ball = Mesh(geometry=SphereGeometry(radius=radius),
-                material=MeshLambertMaterial(color=color))
-    return ball
 
 
 class Robot(object):
@@ -108,7 +89,7 @@ class Robot(object):
 
 
 class KR6R900sixx(Robot):
-    def __init__(self, q = np.array([0.0, -np.pi/2, np.pi/2, 0.0, np.pi/2, 0.0]), interact=False):
+    def __init__(self, q=np.array([0.0, -np.pi/2, np.pi/2, 0.0, np.pi/2, 0.0]), interact=False):
 
         self._q = q
         self._ee = None
@@ -184,7 +165,7 @@ class KR6R900sixx(Robot):
 
     def interact(self):
         def f(q1, q2, q3, q4, q5, q6):
-            
+
             # self._joints[0].quaternion = quaternion_about_axis(
             #     q1, (0, 0, -1, 0)).tolist()
             # self._joints[1].quaternion = quaternion_about_axis(
@@ -207,13 +188,10 @@ class KR6R900sixx(Robot):
                             q4=(np.deg2rad(-350), np.deg2rad(350)),
                             q5=(np.deg2rad(-130), np.deg2rad(130)),
                             q6=(np.deg2rad(-350), np.deg2rad(350)))
-        
-
-        
 
     @property
     def q(self):
-        return self._q  #* np.array([-1.,1.,1.,-1.,1.,-1.])
+        return self._q  # * np.array([-1.,1.,1.,-1.,1.,-1.])
 
     @q.setter
     def q(self, q):
@@ -360,10 +338,10 @@ class KR16(Robot):
 
 
 class UR5(Robot):
-    def __init__(self, q = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), interact=False):
+    def __init__(self, q=np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), interact=False):
         self._q = q
         # self._q_offset = np.array([0, -pi/2, 0, -np.pi/2., 0, 0])
-        # self._q_offset = np.array([0, 0, 0, 0, 0, 0]) 
+        # self._q_offset = np.array([0, 0, 0, 0, 0, 0])
 
         base_dae = Collada('ur5/visual/base.dae')
         forearm_dae = Collada('ur5/visual/forearm.dae')
