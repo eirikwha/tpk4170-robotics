@@ -8,33 +8,7 @@ import time
 from traitlets import observe
 
 
-def mesh_from_dae(dae, name='', scale=1.0):
-    materials = materials_from_dae(dae)
-    group = Group()
-    for geometry in dae.geometries:
-        for primitive in geometry.primitives:
-            vertices = primitive.vertex[primitive.vertex_index] * scale
-            normals = primitive.normal[primitive.normal_index]
-            buffer_geometry = BufferGeometry(
-                attributes={'position': BufferAttribute(array=vertices),
-                            'normal': BufferAttribute(array=normals)})
-            material = materials[primitive.material]
-            mesh = Mesh(geometry=buffer_geometry, material=material)
-            group.add(mesh)
-    group.name = name
-    return group
 
-
-def materials_from_dae(dae):
-    materials = {}
-    for material in dae.materials:
-        name = material.id
-        color = to_hex(material.effect.diffuse)
-        specular = to_hex(material.effect.specular)
-        materials[name] = MeshPhongMaterial(color=color,
-                                            specular=specular,
-                                            shininess=30)
-    return materials
 
 
 
@@ -138,7 +112,7 @@ class KR6R900sixx(Robot):
         tool0.rotateY(pi/2)
         tool0.add(AxesHelper(size=0.5))
 
-        tool0.add(ball())
+        # tool0.add(ball())
 
         self._ee = tool0
 
