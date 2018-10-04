@@ -1,7 +1,9 @@
-from models import ColladaMesh
+import sys
 from pythreejs import Object3D, AxesHelper
 import numpy as np
-from transformations import quaternion_from_matrix
+
+from tpk4170.models import ColladaMesh
+from tpk4170.utils.transformations import quaternion_from_matrix
 
 
 class Link(Object3D):
@@ -13,10 +15,13 @@ class Link(Object3D):
         self.position = (trf[:3, 3]).tolist()
 
 
+dae_path = sys.prefix + '/share/tpk4170/models/ur5/visual/'
+
+
 class BaseLink(Link):
     def __init__(self):
         Object3D.__init__(self)
-        mesh = ColladaMesh('ur5/visual/base.dae')
+        mesh = ColladaMesh(dae_path + 'base.dae')
         mesh.rotateZ(np.pi)
         self.add(mesh)
         axes = AxesHelper(size=0.5)
@@ -26,7 +31,7 @@ class BaseLink(Link):
 class Link1(Link):
     def __init__(self):
         Object3D.__init__(self)
-        mesh = ColladaMesh('ur5/visual/shoulder.dae')
+        mesh = ColladaMesh(dae_path + 'shoulder.dae')
         mesh.rotateX(-np.pi/2)
         mesh.rotateZ(np.pi)
         self.mesh = mesh
@@ -38,7 +43,7 @@ class Link1(Link):
 class Link2(Link):
     def __init__(self):
         Object3D.__init__(self)
-        mesh = ColladaMesh('ur5/visual/upperarm.dae')
+        mesh = ColladaMesh(dae_path + 'upperarm.dae')
         mesh.rotateX(np.pi/2)
         mesh.rotateY(-np.pi/2)
         mesh.position = (0.425, 0, 0.13585)
@@ -51,7 +56,7 @@ class Link2(Link):
 class Link3(Link):
     def __init__(self):
         Object3D.__init__(self)
-        mesh = ColladaMesh('ur5/visual/forearm.dae')
+        mesh = ColladaMesh(dae_path + 'forearm.dae')
         self.mesh = mesh
         mesh.rotateX(np.pi/2)
         mesh.position = (0.39225, 0., -0.1197+0.13585)
@@ -64,7 +69,7 @@ class Link3(Link):
 class Link4(Link):
     def __init__(self):
         Object3D.__init__(self)
-        mesh = ColladaMesh('ur5/visual/wrist1.dae')
+        mesh = ColladaMesh(dae_path + 'wrist1.dae')
         mesh.position = (0.0, -0.10915 + (-0.1197+0.13585), 0)
         self.mesh = mesh
         self.add(mesh)
@@ -75,7 +80,7 @@ class Link4(Link):
 class Link5(Link):
     def __init__(self):
         Object3D.__init__(self)
-        mesh = ColladaMesh('ur5/visual/wrist2.dae')
+        mesh = ColladaMesh(dae_path + 'wrist2.dae')
         mesh.position = (0.0, 0.09465, 0)
         mesh.rotateX(np.pi/2)
         self.mesh = mesh
@@ -87,7 +92,7 @@ class Link5(Link):
 class Link6(Link):
     def __init__(self):
         Object3D.__init__(self)
-        mesh = ColladaMesh('ur5/visual/wrist3.dae')
+        mesh = ColladaMesh(dae_path + 'wrist3.dae')
         mesh.position = (0.0, 0.0, -0.0823)
         mesh.rotateX(np.pi/2)
         self.mesh = mesh
