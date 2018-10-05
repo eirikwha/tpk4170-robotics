@@ -16,7 +16,7 @@ def dh(a, alpha, d, theta):
                      [0.0,     0.0,      0.0, 1.0]])
 
 
-def fk(dh_a, dh_alpha, dh_d, q_zero_offset, q):
+def fk_dh(dh_a, dh_alpha, dh_d, q_zero_offset, q):
     A1 = dh(dh_a[0], dh_alpha[0], dh_d[0], q[0] + q_zero_offset[0])
     A2 = dh(dh_a[1], dh_alpha[1], dh_d[1], q[1] + q_zero_offset[1])
     A3 = dh(dh_a[2], dh_alpha[2], dh_d[2], q[2] + q_zero_offset[2])
@@ -47,12 +47,12 @@ def Jacobian(Ts):
         J[3:, i+1] = zi
     return J
 
-def fk_ur5(q):
+def fk(q):
     a = [0.00000, -0.42500, -0.39225,  0.00000,  0.00000,  0.0000]
     d = [0.089159,  0.00000,  0.00000,  0.10915,  0.09465,  0.0823]
     alpha = [ 1.570796327, 0, 0, 1.570796327, -1.570796327, 0 ]
     q_zero_offset = [0, 0, 0, 0, 0, 0]
-    return fk(a, alpha, d, q_zero_offset, q)
+    return fk_dh(a, alpha, d, q_zero_offset, q)
 
 class UR5Visualizer:
     def __init__(self, interact=False):
@@ -81,7 +81,7 @@ class UR5Visualizer:
         self.show(np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
         
     def show(self, q):
-        T01, T02, T03, T04, T05, T06 = fk_ur5(q)
+        T01, T02, T03, T04, T05, T06 = fk(q)
         self.link_1(T01)
         self.link_2(T02)
         self.link_3(T03)
