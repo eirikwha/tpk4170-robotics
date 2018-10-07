@@ -70,3 +70,57 @@ def cubic_trajectory(current_position, target_position,
 
         trajectories.append((qs, dqs, ddqs, ts))
     return trajectories
+
+
+class LSPBError(Exception):
+    pass
+
+
+def lspb_trajectory(current_position, target_position,
+                    duration_in_seconds, cruise_velocity=None):
+
+    q0 = current_position
+    q1 = target_position
+    tf = duration_in_seconds
+    V = cruise_velocity
+
+    ts = np.linspace(0.0, tf)
+
+    if V is None:
+        V = (q1-q0)/tf * 1.5
+    else:
+        V = np.abs(V) * np.sign(q1-q0)
+        if np.abs(V) < np.abs(q1-q0)/tf:
+            raise LSPBError('V too small')
+        elif np.abs(V) > 2 * np.abs(q1-q0)/tf:
+            raise LSPBError('V too big')
+
+    if np.allclose(q0, q1):
+        s = np.ones(len(ts)) * q0
+        sd = np.zeros(len(ts))
+        sdd = np.zeros(len(ts))
+        return (s, sd, sdd)
+
+    tb = (q0 - q1 + V*tf)/V
+    a = V/tb
+
+    p = []
+    pd = []
+    pdd = []
+
+    for tt in ts:
+        if tt <= tb:
+            # Initial blend
+            p.append(q0 + a/2*tt*tt)
+            pd.append(a*tt)
+            pdd.append(a)
+        elif tt <= (tf - tb):
+            p.append((q1+q0-V*tf)/2 + V*tt)
+            pd.append(V)
+            pdd.append(0.0)
+        else:
+            p.append(q1 - (a/2*tf*tf) + a*tf*tt - a/2*tt*tt)
+            pd.append(a*tf - a*tt)
+            pdd.append(-a)
+
+    return (p, pd, pdd, ts)

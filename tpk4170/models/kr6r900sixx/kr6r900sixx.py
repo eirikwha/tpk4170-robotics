@@ -1,7 +1,9 @@
-from models import ColladaMesh
+import sys
 from pythreejs import Object3D, AxesHelper
 import numpy as np
-from transformations import quaternion_from_matrix
+
+from tpk4170.models import ColladaMesh
+from tpk4170.utils.transformations import quaternion_from_matrix
 
 
 class KR6R900sixx:
@@ -18,10 +20,13 @@ class Link(Object3D):
         self.position = (trf[:3, 3]).tolist()
 
 
+dae_path = sys.prefix + '/share/tpk4170/models/kr6r900sixx/visual/'
+
+
 class BaseLink(Link):
     def __init__(self):
         Object3D.__init__(self)
-        mesh = ColladaMesh('kr6r900sixx/visual/base_link.dae', scale=0.001)
+        mesh = ColladaMesh(dae_path + 'base_link.dae', scale=0.001)
         self.add(mesh)
         axes = AxesHelper(size=0.5)
         self.add(axes)
@@ -30,7 +35,7 @@ class BaseLink(Link):
 class Link1(Link):
     def __init__(self):
         Link.__init__(self)
-        mesh = ColladaMesh('kr6r900sixx/visual/link_1.dae', scale=0.001)
+        mesh = ColladaMesh(dae_path + 'link_1.dae', scale=0.001)
         mesh.rotateX(np.pi/2)
         mesh.position = (-0.025, 0.0, 0.0)
         self.mesh = mesh
@@ -42,7 +47,7 @@ class Link1(Link):
 class Link2(Link):
     def __init__(self):
         Link.__init__(self)
-        mesh = ColladaMesh('kr6r900sixx/visual/link_2.dae', scale=0.001)
+        mesh = ColladaMesh(dae_path + 'link_2.dae', scale=0.001)
         mesh.rotateZ(np.pi/2)
         mesh.rotateX(np.pi/2)
         mesh.position = (-0.455, 0.0, 0.0)
@@ -55,7 +60,7 @@ class Link2(Link):
 class Link3(Link):
     def __init__(self):
         Link.__init__(self)
-        mesh = ColladaMesh('kr6r900sixx/visual/link_3.dae', scale=0.001)
+        mesh = ColladaMesh(dae_path + 'link_3.dae', scale=0.001)
         mesh.position = (-0.035, 0.0, -0.025)
         mesh.rotateZ(np.pi)
         mesh.rotateY(-np.pi/2)
@@ -66,7 +71,7 @@ class Link3(Link):
 class Link4(Link):
     def __init__(self):
         Link.__init__(self)
-        mesh = ColladaMesh('kr6r900sixx/visual/link_4.dae', scale=0.001)
+        mesh = ColladaMesh(dae_path + 'link_4.dae', scale=0.001)
         mesh.rotateZ(np.pi/2)
         mesh.rotateX(np.pi/2)
         mesh.position = (0.0, -0.42, 0)
@@ -79,7 +84,7 @@ class Link4(Link):
 class Link5(Link):
     def __init__(self):
         Link.__init__(self)
-        mesh = ColladaMesh('kr6r900sixx/visual/link_5.dae', scale=0.001)
+        mesh = ColladaMesh(dae_path + 'link_5.dae', scale=0.001)
         mesh.rotateX(np.pi)
         mesh.rotateY(np.pi/2)
         self.mesh = mesh
@@ -91,7 +96,7 @@ class Link5(Link):
 class Link6(Link):
     def __init__(self):
         Link.__init__(self)
-        mesh = ColladaMesh('kr6r900sixx/visual/link_6.dae', scale=0.001)
+        mesh = ColladaMesh(dae_path + 'link_6.dae', scale=0.001)
         mesh.rotateY(-np.pi/2)
         self.mesh = mesh
         self.add(mesh)
