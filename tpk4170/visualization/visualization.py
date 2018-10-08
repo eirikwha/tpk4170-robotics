@@ -9,7 +9,7 @@ from tpk4170.models import Grid, Ball
 
 class Visualizer:
     def __init__(self, base_link, link_1, link_2,
-                 link_3, link_4, link_5, link_6, fk, interact=False, show_trajectory=False):
+                 link_3, link_4, link_5, link_6, fk, interact=False):
         self.viewer = Viewer()
         self.grid = Grid()
         self.viewer.add(self.grid)
@@ -35,11 +35,9 @@ class Visualizer:
         if interact:
             self.interact()
 
-        self._show_trajectory = show_trajectory
-
         self.show(np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
 
-    def show(self, q):
+    def show(self, q, show_trajectory=False):
         T01, T02, T03, T04, T05, T06 = self._fk(q)
         self.link_1(T01)
         self.link_2(T02)
@@ -48,7 +46,7 @@ class Visualizer:
         self.link_5(T05)
         self.link_6(T06)
 
-        if self._show_trajectory:
+        if show_trajectory:
             ball = Ball(color='white', radius=0.01)
             ball.position = T06[:3, 3].tolist()
             self.viewer.add(ball)
@@ -78,5 +76,4 @@ class Kr6R900SixxVisualizer(Visualizer):
                             kr6.Link5(),
                             kr6.Link6(),
                             fk_kr6r900sixx,
-                            interact,
-                            show_trajectory)
+                            interact)

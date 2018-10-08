@@ -1,4 +1,5 @@
 import numpy as np
+from tpk4170.forward_kinematics import Jacobian
 
 
 def ik_analytical_ur5(trf, shoulder=-1, elbow=1, wrist=-1):
@@ -58,7 +59,7 @@ def ik_analytical_ur5(trf, shoulder=-1, elbow=1, wrist=-1):
     return np.array([q1, q2, q3, q4, q5, q6])
 
 
-def ik_iterative(trf, q0=np.array([1, 1, 1, 1, 1, 1])):
+def ik_iterative(trf, fk, q0=np.array([1, 1, 1, 1, 1, 1])):
     Rd = trf[:3, :3]
     qk = q0
     qs = []
