@@ -17,7 +17,7 @@ def vee(S):
     return vec([S[2, 1], S[0, 2], S[1, 0]])
 
 
-def exp():
+def exp(v):
     angle = np.linalg.norm(v)
     S = skew(v / angle)
     return I + np.sin(angle) * S + (1 - np.cos(angle)) * S @ S
