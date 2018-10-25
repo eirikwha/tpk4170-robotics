@@ -15,7 +15,7 @@ class Viewer:
 
         c.add(key_light)
 
-        pl = PointLight(color='0xffffff', intensity=0.1, position=[3, 3, 3])
+        pl = PointLight(color='blue', intensity=0.1, position=[3, 3, 3])
 
         self._scene = Scene()
         self._scene.background = background
